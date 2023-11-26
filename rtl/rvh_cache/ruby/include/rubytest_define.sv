@@ -1,0 +1,9 @@
+// `define RUBY
+`define RRV64_RUBY_SIM_EN
+`define RT_DEBUG_SHOW_REQ_CORE
+//`define RRV64_SUPPORT_AXI_M_1
+// `define CORE_NUM_4
+`define RT_MODE_CLASSIC
+`define LFSR_HIGH_16BIT_ENABLE
+`define RT_RUBY_ENABLE_MULTICORE
+

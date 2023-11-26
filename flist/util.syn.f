@@ -1,0 +1,15 @@
+$PROJ_ROOT/rtl/util/age_order_selector.sv            
+$PROJ_ROOT/rtl/util/one_hot_priority_encoder.sv
+$PROJ_ROOT/rtl/util/age_order_selector_with_head.sv  
+$PROJ_ROOT/rtl/util/onehot_mux.sv
+$PROJ_ROOT/rtl/util/priority_encoder.sv
+$PROJ_ROOT/rtl/util/usage_manager.sv
+$PROJ_ROOT/rtl/util/one_counter.sv
+$PROJ_ROOT/rtl/util/inorder_router.sv
+$PROJ_ROOT/rtl/util/mp_fifo.sv   
+$PROJ_ROOT/rtl/util/mp_freelist.sv
+$PROJ_ROOT/rtl/util/freelist.sv   
+$PROJ_ROOT/rtl/util/pseudo_dual_ram.sv
+$PROJ_ROOT/rtl/util/pseudo_ram.sv
+$PROJ_ROOT/rtl/util/reg_dual_ram.sv
+$PROJ_ROOT/rtl/util/plru.sv

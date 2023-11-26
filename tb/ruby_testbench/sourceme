@@ -1,0 +1,1 @@
+export RUBY_TB_ROOT=$PROJ_ROOT/tb/ruby_testbench

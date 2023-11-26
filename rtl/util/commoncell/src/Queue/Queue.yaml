@@ -1,0 +1,58 @@
+Name: Queue
+Dependency:
+  - ../StdDFF/StdDFF.yaml
+  - ../Basic/Basic.yaml
+Module: 
+  - name: QueueManager
+    description: Queue Ptr Manager
+    language: SystemVerilog
+    rtl:
+      - hw/QueueManager.v
+    dependency:
+      - CountOne
+      - StdDFF
+
+  - name: StaticPrioritySelector
+    description: Static Priority Selector
+    language: SystemVerilog
+    rtl:
+      - hw/StaticPrioritySelector.v
+    sim:
+      - dv/StaticPrioritySelector_tb.v
+
+  - name: AgeMatrixSelector
+    description: Age Matrix selector to select in age order
+    language: SystemVerilog
+    rtl:
+      - hw/AgeMatrixSelector.v
+    # sim:
+    #   - dv/AgeMatrixSelector_tb.v
+    dependency:
+      - MuxOH
+
+  - name: MultiPortStreamFIFO
+    description: MultiPortStream FIFO
+    language: SystemVerilog
+    rtl:
+      - hw/FIFO/MultiPortStreamFIFO.v
+    sim:
+      - dv/FIFO/MultiPortStreamFIFO_tb.v
+    dependency:
+      - QueueManager
+
+  - name: FIAOWithQueueManager
+    description: FIAOWithQueueManager
+    language: SystemVerilog
+    rtl:
+      - hw/FIAO/FIAOWithQueueManager.v
+    dependency:
+      - QueueManager
+
+  # - name: FIAOWithAgeMatrix
+  #   description: FIAOWithAgeMatrix
+  #   language: SystemVerilog
+  #   rtl:
+  #     - hw/FIAO/FIAOWithAgeMatrix.v
+  #   dependency:
+  #     - OH2UInt
+  #     - AgeMatrixSelector

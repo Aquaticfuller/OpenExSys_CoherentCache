@@ -1,0 +1,193 @@
+module rvh_l1d
+    import rvh_pkg::*;
+    import riscv_pkg::*;
+    import uop_encoding_pkg::*;
+    import rvh_lsu_pkg::*;
+(
+    // LS Pipe -> D$ : Load request
+    input  logic [LSU_ADDR_PIPE_COUNT-1:0]                         ls_pipe_l1d_ld_req_vld_i,
+    input  logic [LSU_ADDR_PIPE_COUNT-1:0]                         ls_pipe_l1d_ld_req_io_i,
+    input  logic [LSU_ADDR_PIPE_COUNT-1:0][     ROB_TAG_WIDTH-1:0] ls_pipe_l1d_ld_req_rob_tag_i,
+    input  logic [LSU_ADDR_PIPE_COUNT-1:0][    PREG_TAG_WIDTH-1:0] ls_pipe_l1d_ld_req_prd_i,
+    input  logic [LSU_ADDR_PIPE_COUNT-1:0][      LDU_OP_WIDTH-1:0] ls_pipe_l1d_ld_req_opcode_i,
+    input  logic [LSU_ADDR_PIPE_COUNT-1:0][   L1D_INDEX_WIDTH-1:0] ls_pipe_l1d_ld_req_index_i,
+    input  logic [LSU_ADDR_PIPE_COUNT-1:0][     L1D_TAG_WIDTH-1:0] ls_pipe_l1d_ld_req_tag_i,
+    output logic [LSU_ADDR_PIPE_COUNT-1:0]                         ls_pipe_l1d_ld_req_rdy_o,
+    // LS Pipe -> D$ : DTLB response
+    input  logic [LSU_ADDR_PIPE_COUNT-1:0]                         ls_pipe_l1d_dtlb_resp_vld_i,
+    input  logic [LSU_ADDR_PIPE_COUNT-1:0][         PPN_WIDTH-1:0] ls_pipe_l1d_dtlb_resp_ppn_i,
+    input  logic [LSU_ADDR_PIPE_COUNT-1:0]                         ls_pipe_l1d_dtlb_resp_excp_vld_i,
+    input  logic [LSU_ADDR_PIPE_COUNT-1:0]                         ls_pipe_l1d_dtlb_resp_hit_i,
+    input  logic [LSU_ADDR_PIPE_COUNT-1:0]                         ls_pipe_l1d_dtlb_resp_miss_i,
+    // LS Pipe -> D$ : Store request
+    input  logic [LSU_ADDR_PIPE_COUNT-1:0]                         ls_pipe_l1d_st_req_vld_i,
+    input  logic [LSU_ADDR_PIPE_COUNT-1:0]                         ls_pipe_l1d_st_req_io_i,
+    input  logic [LSU_ADDR_PIPE_COUNT-1:0][     ROB_TAG_WIDTH-1:0] ls_pipe_l1d_st_req_rob_tag_i,
+    input  logic [LSU_ADDR_PIPE_COUNT-1:0][    PREG_TAG_WIDTH-1:0] ls_pipe_l1d_st_req_prd_i,
+    input  logic [LSU_ADDR_PIPE_COUNT-1:0][      STU_OP_WIDTH-1:0] ls_pipe_l1d_st_req_opcode_i,
+    input  logic [LSU_ADDR_PIPE_COUNT-1:0][   L1D_INDEX_WIDTH-1:0] ls_pipe_l1d_st_req_index_i,
+    input  logic [LSU_ADDR_PIPE_COUNT-1:0][     L1D_TAG_WIDTH-1:0] ls_pipe_l1d_st_req_tag_i,
+    input  logic [LSU_ADDR_PIPE_COUNT-1:0][              XLEN-1:0] ls_pipe_l1d_st_req_data_i,
+    output logic [LSU_ADDR_PIPE_COUNT-1:0]                         ls_pipe_l1d_st_req_rdy_o,
+    // L1D -> LS Pipe : D-Cache MSHR Full, Replay load
+    output logic [LSU_ADDR_PIPE_COUNT-1:0]                         l1d_ls_pipe_replay_mshr_full_o,
+    // LS Pipe -> L1D : Kill D-Cache Response
+    input  logic [LSU_ADDR_PIPE_COUNT-1:0]                         ls_pipe_l1d_kill_resp_i,
+    // D$ -> ROB : Write Back
+    output logic [LSU_ADDR_PIPE_COUNT+LSU_DATA_PIPE_COUNT-1:0]                         l1d_rob_wb_vld_o,
+    output logic [LSU_ADDR_PIPE_COUNT+LSU_DATA_PIPE_COUNT-1:0][     ROB_TAG_WIDTH-1:0] l1d_rob_wb_rob_tag_o,
+    // D$ -> Int PRF : Write Back
+    output logic [LSU_ADDR_PIPE_COUNT-1:0]                         l1d_int_prf_wb_vld_o,
+    output logic [LSU_ADDR_PIPE_COUNT-1:0][INT_PREG_TAG_WIDTH-1:0] l1d_int_prf_wb_tag_o,
+    output logic [LSU_ADDR_PIPE_COUNT-1:0][              XLEN-1:0] l1d_int_prf_wb_data_o,
+
+    // PTW -> D$ : Request
+
+    // PTW -> D$ : Response
+
+    // L1D -> L2 : Request
+
+    // L1D -> L2 : Response
+
+
+    input logic flush_i,
+
+    input clk,
+    input rst
+);
+
+    bit [7:0] mem [2**30];
+
+    assign ls_pipe_l1d_ld_req_rdy_o = {LSU_ADDR_PIPE_COUNT{1'b1}};
+    assign ls_pipe_l1d_st_req_rdy_o = {LSU_DATA_PIPE_COUNT{1'b1}};
+    assign l1d_ls_pipe_replay_mshr_full_o = {LSU_ADDR_PIPE_COUNT{1'b0}};
+
+    // Stage M1
+    logic [LSU_ADDR_PIPE_COUNT-1:0]                     m1_vld_q;
+    logic [LSU_ADDR_PIPE_COUNT-1:0]                     m1_io_q;
+    logic [LSU_ADDR_PIPE_COUNT-1:0][ ROB_TAG_WIDTH-1:0] m1_rob_tag_q;
+    logic [LSU_ADDR_PIPE_COUNT-1:0][PREG_TAG_WIDTH-1:0] m1_prd_q;
+    logic [LSU_ADDR_PIPE_COUNT-1:0][  LDU_OP_WIDTH-1:0] m1_opcode_q;
+    logic [LSU_ADDR_PIPE_COUNT-1:0][L1D_INDEX_WIDTH-1:0]m1_index_q;
+    // Stage M2
+    logic [LSU_ADDR_PIPE_COUNT-1:0][   PADDR_WIDTH-1:0] m2_paddr;
+    logic [LSU_ADDR_PIPE_COUNT-1:0][7:0] m2_byte_mask;
+    logic [LSU_ADDR_PIPE_COUNT-1:0]                     m2_vld_q;
+    logic [LSU_ADDR_PIPE_COUNT-1:0][ ROB_TAG_WIDTH-1:0] m2_rob_tag_q;
+    logic [LSU_ADDR_PIPE_COUNT-1:0][PREG_TAG_WIDTH-1:0] m2_prd_q;
+    logic [LSU_ADDR_PIPE_COUNT-1:0][          XLEN-1:0] m2_data_q;
+
+    logic [LSU_ADDR_PIPE_COUNT-1:0][          XLEN-1:0] wdata;
+
+    // Stage M3
+
+    // Store
+    logic [LSU_DATA_PIPE_COUNT-1:0][               7:0] st_byte_mask;
+    logic [LSU_DATA_PIPE_COUNT-1:0][   VADDR_WIDTH-1:0] st_vaddr;
+
+    assign l1d_rob_wb_vld_o[LSU_ADDR_PIPE_COUNT-1:0]      = m2_vld_q & ~ls_pipe_l1d_kill_resp_i;
+    assign l1d_rob_wb_rob_tag_o[LSU_ADDR_PIPE_COUNT-1:0]  = m2_rob_tag_q;
+    assign l1d_rob_wb_vld_o[LSU_DATA_PIPE_COUNT+LSU_ADDR_PIPE_COUNT-1:LSU_ADDR_PIPE_COUNT] = ls_pipe_l1d_st_req_vld_i;
+    assign l1d_rob_wb_rob_tag_o[LSU_DATA_PIPE_COUNT+LSU_ADDR_PIPE_COUNT-1:LSU_ADDR_PIPE_COUNT]  = ls_pipe_l1d_st_req_rob_tag_i;
+
+    assign l1d_int_prf_wb_vld_o  = m2_vld_q & ~ls_pipe_l1d_kill_resp_i;
+    assign l1d_int_prf_wb_tag_o  = m2_prd_q;
+    assign l1d_int_prf_wb_data_o = m2_data_q;
+
+
+    generate
+        for (genvar i = 0; i < LSU_ADDR_PIPE_COUNT; i++) begin
+            assign m2_paddr[i] = {ls_pipe_l1d_dtlb_resp_ppn_i[i],m1_index_q[i]} - 40'h80000000;
+            assign m2_byte_mask[i] = generate_ld_byte_mask(m2_paddr[i],m1_opcode_q[i]);
+            always_ff @(posedge clk) begin
+                if (rst) begin
+                    m1_vld_q[i] <= 1'b0;
+                end else begin
+                    m1_vld_q[i]     <= ls_pipe_l1d_ld_req_vld_i[i];
+                    m1_io_q[i]      <= ls_pipe_l1d_ld_req_io_i[i];
+                    m1_rob_tag_q[i] <= ls_pipe_l1d_ld_req_rob_tag_i[i];
+                    m1_prd_q[i]     <= ls_pipe_l1d_ld_req_prd_i[i];
+                    m1_opcode_q[i]  <= ls_pipe_l1d_ld_req_opcode_i[i];
+                    m1_index_q[i]   <= ls_pipe_l1d_ld_req_index_i[i];
+                end
+            end
+            always_ff @(posedge clk) begin
+                if (rst) begin
+                    m2_vld_q[i] <= 1'b0;
+                end else begin
+                    m2_vld_q[i]     <= m1_vld_q[i];
+                    if(m1_vld_q[i]) begin
+                        m2_rob_tag_q[i] <= m1_rob_tag_q[i];
+                        m2_prd_q[i]     <= m1_prd_q[i];
+                        case (m1_opcode_q[i])
+                            LDU_LB : m2_data_q[i] <= {{56{mem[m2_paddr[i]][7]}},mem[m2_paddr[i]]};
+                            LDU_LH : m2_data_q[i] <= {{48{mem[m2_paddr[i]+1][7]}},mem[m2_paddr[i]+1],mem[m2_paddr[i]]};
+                            LDU_LW : m2_data_q[i] <= {{32{mem[m2_paddr[i]+3][7]}},mem[m2_paddr[i]+3],mem[m2_paddr[i]+2],mem[m2_paddr[i]+1],mem[m2_paddr[i]]};
+                            LDU_LD : m2_data_q[i] <= {mem[m2_paddr[i]+7],mem[m2_paddr[i]+6],mem[m2_paddr[i]+5],mem[m2_paddr[i]+4],mem[m2_paddr[i]+3],mem[m2_paddr[i]+2],mem[m2_paddr[i]+1],mem[m2_paddr[i]]};
+                            LDU_LBU: m2_data_q[i] <= {{56{1'b0}},mem[m2_paddr[i]]};
+                            LDU_LHU: m2_data_q[i] <= {{48{1'b0}},mem[m2_paddr[i]+1],mem[m2_paddr[i]]};
+                            LDU_LWU: m2_data_q[i] <= {{32{1'b0}},mem[m2_paddr[i]+3],mem[m2_paddr[i]+2],mem[m2_paddr[i]+1],mem[m2_paddr[i]]};
+                            default:;
+                        endcase
+                    end
+                end
+            end
+
+        end
+    endgenerate
+
+    generate
+        for (genvar i = 0; i < LSU_DATA_PIPE_COUNT; i++) begin
+            assign st_byte_mask[i] = generate_st_byte_mask(st_vaddr[i],ls_pipe_l1d_st_req_opcode_i[i]);
+            assign st_vaddr[i] = {ls_pipe_l1d_st_req_tag_i[i], ls_pipe_l1d_st_req_index_i[i]} - 40'h80000000;
+        end
+    endgenerate
+
+
+    generate
+        for (genvar i = 0; i < LSU_ADDR_PIPE_COUNT; i++) begin
+            always_comb begin
+                case (st_vaddr[i][2:0])
+                    3'd0: wdata[i] = {ls_pipe_l1d_st_req_data_i[i]};
+                    3'd1: wdata[i] = {ls_pipe_l1d_st_req_data_i[i][0+:56], 8'b0};
+                    3'd2: wdata[i] = {ls_pipe_l1d_st_req_data_i[i][0+:48], 16'b0};
+                    3'd3: wdata[i] = {ls_pipe_l1d_st_req_data_i[i][0+:40], 24'b0};
+                    3'd4: wdata[i] = {ls_pipe_l1d_st_req_data_i[i][0+:32], 32'b0};
+                    3'd5: wdata[i] = {ls_pipe_l1d_st_req_data_i[i][0+:24], 40'b0};
+                    3'd6: wdata[i] = {ls_pipe_l1d_st_req_data_i[i][0+:16], 48'b0};
+                    default: wdata[i] = {ls_pipe_l1d_st_req_data_i[i][0+:8], 56'b0};
+                endcase
+            end
+        end
+    endgenerate
+
+
+
+    always_ff @(posedge clk) begin
+        for (int i = 0; i < LSU_DATA_PIPE_COUNT; i++) begin
+            if(ls_pipe_l1d_st_req_vld_i[i] & (ls_pipe_l1d_st_req_opcode_i[i] != STU_FENCE)) begin
+                for (int j = 0; j < 8; j++) begin
+                    if(st_byte_mask[i][j]) begin
+                        mem[{st_vaddr[i][VADDR_WIDTH-1:3], 3'b0}+j] <= wdata[i][j*8+:8];
+                    end
+                end
+            end
+        end
+    end
+
+
+
+`ifndef SYNTHESIS
+    generate
+        for(genvar i = 0; i < LSU_DATA_PIPE_COUNT; i++) begin : gen_checker
+            CHECK_X_VALUE : 
+            assert property (@(posedge clk) 
+                (ls_pipe_l1d_st_req_vld_i[i] & (ls_pipe_l1d_st_req_opcode_i[i] != STU_FENCE)) |-> (|wdata[i] !== 1'bx)) 
+            else begin
+                $fatal("\n Propogate X value -> Lane[%d] \n",i);
+            end
+        end
+    endgenerate
+`endif
+
+endmodule : rvh_l1d

@@ -1,0 +1,41 @@
+# # Eg. 1
+# # Define the target logic library, symbol library,
+# # and link libraries
+# set_app_var target_library lsi_10k.db
+# set_app_var symbol_library lsi_10k.sdb
+# set_app_var synthetic_library dw_foundation.sldb
+# set_app_var link_library "* $target_library $synthetic_library"
+# set_app_var search_path [concat $search_path ./src]
+# set_app_var designer "Your Name"
+# # Define aliases
+# alias h history
+# alias rc "report_constraint -all_violators"
+
+# # Eg. 2: Naming Rules Section of .synopsys_dc.setup File
+# # Limit object names to alphanumeric characters
+# # Change DesignWare cell names to valid names (changes “*cell*” to “U” and “*-return” to “RET”)
+# define_name_rules simple_names -allowed "A-Za-z0-9_" \
+#     -last_restricted "_" \
+#     -first_restricted "_" \
+#     -map { {{"\*cell\*","U"}, {"*-return","RET"}} }
+
+ 
+#----------Tool Setting---------#
+
+set_app_var sh_new_variable_message                     false
+set_app_var report_default_significant_digits           3
+set_app_var hdlin_infer_multibit                        default_all
+set_app_var compile_clock_gating_through_hierarchy      true
+set_app_var hdlin_enable_upf_compatible_naming          true
+set_app_var compile_timing_high_effort_tns              true
+set_app_var compile_clock_gating_through_hierarchy      true
+set_app_var hdlin_enable_hier_map                       true
+
+set_host_options -max_cores 16
+#each 8 cores need a license#
+
+
+# set_app_var html_log_enable true
+# #enable to record compile log in html format, which depends on python#
+# set_app_var html_log_filename [date]_HTML_log.html
+

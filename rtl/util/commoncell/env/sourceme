@@ -1,0 +1,11 @@
+#!/bin/sh
+
+CURDIR=$(cd $(dirname ${BASH_SOURCE[0]}); pwd )
+
+PROJ_ROOT=$CURDIR/../
+
+PICO_PATH=$PROJ_ROOT/tools/pico/
+
+export PROJ_ROOT
+
+export PATH=$PICO_PATH:$PATH

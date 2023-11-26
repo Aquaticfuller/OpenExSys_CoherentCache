@@ -1,0 +1,127 @@
+#!/usr/bin/python3
+
+import argparse
+from distutils.log import fatal
+from genericpath import getmtime
+import os
+from pathlib import Path
+from sys import argv
+import yaml
+from time import ctime, gmtime, strftime, time
+from edalize import *
+import edalize
+from PackageParser import PackageParser
+
+SIM_TOOL = [
+    'vcs', 'verilator'
+]
+
+TOOLS = [tool for tool in edalize.walk_tool_packages()]
+
+def getTime():
+    return strftime("%m%d_%H_%M", gmtime())
+
+
+class PicoArgsParser:
+    def __init__(self, argv) -> None:
+        argParser = argparse.ArgumentParser(usage='Pico.py [manifest] -top [topmodule] -tool [vcs/verilator/veriblelint .etc] -configure -build -run',prefix_chars="-+")
+        argParser.add_argument('manifest', type=str, help="Project manifest")
+        argParser.add_argument(
+            '+args', nargs='?', action='append', help="Compile arguments")
+        argParser.add_argument(
+            '-tool', type=str, choices=TOOLS, required=True, help="EDA tool")
+        argParser.add_argument(
+            '-top', type=str, required=True, help="Top module")
+        argParser.add_argument('-trace', action='store_true',
+                               default=False, help="Enable Waveform")
+        argParser.add_argument(
+            '+define', nargs='?', action='append', type=str, help="Verilog defination")
+        argParser.add_argument('-workdir', type=str, help="Work space")
+        argParser.add_argument('-build', action='store_true',
+                               default=False, help="Build Project")
+        argParser.add_argument('-run', action='store_true',
+                               default=False, help="Run Project")
+        argParser.add_argument('+runtime', action='append', help="runtime args")
+        argParser.add_argument('-cov','-coverage', dest='coverage', action='store_true',help='Enable coverage')
+        self.config = argParser.parse_args(argv)
+
+        self.tool = self.config.tool
+        self.toplevel = self.config.top
+        self.build = self.config.build
+        self.run = self.config.run
+        self.tool_options = self.buildToolOptions()
+        self.parameters = self.buildDefination()
+        self.file = self.buildFlist()
+        self.edam = {
+            'files': self.file,
+            'name': self.toplevel,
+            'parameters': self.parameters,
+            'tool_options': self.tool_options,
+            'toplevel': self.toplevel
+        }
+        self.workSpace = self.getWorkSpace()
+
+    def getWorkSpace(self):
+        if self.config.workdir:
+            work_root = self.config.workdir
+        else:
+            work_root = self.tool + '_' + self.toplevel + '_' + getTime()
+        return work_root
+
+    def buildFlist(self):
+        manifestParser = PackageParser(self.config.manifest)
+        simulationEnable = self.tool in SIM_TOOL
+        return manifestParser.genEDAlizeFile(self.toplevel, simulationEnable)
+
+    def buildToolOptions(self):
+        config = self.config
+        tool_options = yaml.load(
+            open(Path(__file__).parent / "defaultToolOption.yaml"), yaml.CLoader)
+        if config.args:
+            if config.tool == 'vcs':
+                tool_options['vcs']['vcs_options'] += config.args
+        if config.runtime:
+            if config.tool == 'vcs':
+                tool_options['vcs']['run_options'] += config.runtime
+        if config.coverage:
+            if config.tool == 'vcs':
+                tool_options['vcs']['vcs_options'] += ['-cm line+cond+tgl+fsm+branch+assert']
+                tool_options['vcs']['run_options'] += ['-cm line+cond+tgl+fsm+branch+assert']
+        return tool_options
+
+    def buildDefination(self):
+        parameters = {}
+        config = self.config
+        if config.trace:
+            parameters["DUMPON"] = {
+                'datatype': 'bool',
+                'default': 1,
+                'paramtype': 'vlogdefine'
+            }
+        if config.define:
+            for define in config.define:
+                for item in define.split(','):
+                    parameters[item] = {
+                        'datatype': 'bool',
+                        'default': 1,
+                        'paramtype': 'vlogdefine'
+                    }
+        return parameters
+
+if __name__ == "__main__":
+
+    config = PicoArgsParser(argv[1:])
+
+    work_root = config.workSpace
+
+    backend = get_edatool(config.tool)(edam=config.edam, work_root=work_root)
+
+    if not os.path.exists(work_root):
+        os.makedirs(work_root)
+
+    if config.build:
+        backend.configure()
+        backend.build()
+
+    if config.run:
+        backend.run()

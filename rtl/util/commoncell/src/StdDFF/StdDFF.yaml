@@ -1,0 +1,39 @@
+Name : StdDFF
+Module:
+  - name: DFFUncertainChecker
+    description: DFF uncertain checker
+    language: SystemVerilog
+    rtl:
+      - dv/DFFUncertainChecker.v
+
+  - name: DFF
+    description: Standard DFF
+    language: SystemVerilog
+    rtl:
+      - hw/DFF.v
+    dependency:
+      - DFFUncertainChecker
+
+  - name: DFFE
+    description: Standard DFF with EN port
+    language: SystemVerilog
+    rtl:
+      - hw/DFFE.v
+    dependency:
+      - DFFUncertainChecker
+
+  - name: DFFR
+    description: Standard DFF with RST port
+    language: SystemVerilog
+    rtl:
+      - hw/DFFR.v
+    dependency:
+      - DFFUncertainChecker
+
+  - name: DFFRE
+    description: Standard DFF with EN and RST port
+    language: SystemVerilog
+    rtl:
+      - hw/DFFRE.v
+    dependency:
+      - DFFUncertainChecker

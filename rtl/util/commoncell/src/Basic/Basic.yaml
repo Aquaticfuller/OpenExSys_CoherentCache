@@ -1,0 +1,67 @@
+Name: Basic
+Dependency:
+  - ../StdDFF/StdDFF.yaml
+Module:
+  - name: CountOne
+    description: CountOne
+    language: SystemVerilog
+    rtl:
+      - hw/CountOne.v
+    sim:
+      - dv/CountOne_tb.v
+
+  - name: MuxOH
+    description: One-hot Mux
+    language: SystemVerilog
+    rtl:
+      - hw/MuxOH.v
+    sim:
+      - dv/MuxOH_tb.v
+
+  - name: OH2UInt
+    description: One-hot to UInt
+    language: SystemVerilog
+    rtl:
+      - hw/OH2UInt.v
+    dependency:
+      - CountOne
+
+  - name: PriorityMux
+    description: Priority Mux
+    language: SystemVerilog
+    rtl:
+      - hw/PriorityMux.v
+    dependency:
+      - MuxOH
+
+  - name: SyncFIFO
+    description: Sync FIFO
+    language: SystemVerilog
+    rtl:
+      - hw/SyncFIFO.v
+    sim:
+      - dv/SyncFIFO_tb.v
+    dependency:
+      - StdDFF
+
+  - name: StreamFIFO
+    description: StreamFIFO
+    language: SystemVerilog
+    rtl:
+      - hw/StreamFIFO.v
+    sim:
+      - dv/StreamFIFO_tb.v
+    dependency:
+      - SyncFIFO
+
+  - name: PLRU
+    description: PLRU
+    language: SystemVerilog
+    rtl:
+      - hw/PLRUTree.v
+      - hw/PLRU.v
+    sim:
+      - dv/PLRU_tb.v
+    dependency:
+      - StdDFF
+

@@ -1,0 +1,3 @@
+[submodule "rtl/OpenExSys_NoC"]
+	path = rtl/OpenExSys_NoC
+	url = git@github.com:Aquaticfuller/OpenExSys_NoC.git

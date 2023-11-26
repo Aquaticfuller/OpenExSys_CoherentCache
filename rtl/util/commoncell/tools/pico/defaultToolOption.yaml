@@ -1,0 +1,8 @@
+vcs :
+  vcs_options : [-full64,-sverilog,+v2k,-debug_access+all,-kdb]
+  run_options : []
+spyglass:
+  methodology : GuideWare/latest/block/rtl_handoff
+  goals : [ 'lint/lint_rtl' ]
+  spyglass_parameters : []
+  rule_parameters : []

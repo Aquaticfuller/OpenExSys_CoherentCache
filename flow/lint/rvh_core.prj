@@ -1,0 +1,25 @@
+#!SPYGLASS_PROJECT_FILE
+#!VERSION 3.0
+#  -------------------------------------------------------------------
+#  This is a automatically generated project file by fusesoc.
+#  -------------------------------------------------------------------
+
+
+set_option projectwdir .
+set_option language_mode mixed
+set_option designread_enable_synthesis yes
+set_option designread_disable_flatten no
+
+# Make no only FATAL messages return a non-zero exit code, but also ERRORs and
+# WARNINGs
+set_option enable_pass_exit_codes yes
+
+
+read_file -type sourcelist ../../flist/hn.syn.f
+
+set_option top hn_wrapper
+set_option enableSV09 yes
+set_option active_methodology $SPYGLASS_HOME/GuideWare/latest/block/rtl_handoff
+
+current_methodology $SPYGLASS_HOME/GuideWare/latest/block/rtl_handoff
+

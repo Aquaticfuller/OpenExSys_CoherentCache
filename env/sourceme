@@ -1,0 +1,12 @@
+#!/bin/sh
+
+CURDIR=$(cd $(dirname ${BASH_SOURCE[0]}); pwd )
+
+PROJ_ROOT=$CURDIR/..
+
+L1D_ROOT=./rtl/rvh_cache
+NOC_ROOT=./rtl/OpenExSys_NoC
+
+export PROJ_ROOT
+export L1D_ROOT
+export NOC_ROOT
