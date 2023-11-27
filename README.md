@@ -28,7 +28,7 @@ For store buffer specification, please refer to [Store Buffer](./rtl/rvh_cache/d
 
 ### LLC and SCU Architecture
 
-For last-level cache (LLC) and snoop control unit (SCU) specification, please refer to [LLC and SCU Architecture](./rtl/rvh_cache/doc/scu_coherence.md), 
+For last-level cache (LLC) and snoop control unit (SCU) specification, please refer to [LLC and SCU Architecture](./rtl/rvh_cache/doc/scu_coherence.md).
 
 
 
