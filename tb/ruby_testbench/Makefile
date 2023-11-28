@@ -1,6 +1,7 @@
 RUBY_TB_ROOT=$(PROJ_ROOT)/tb/ruby_testbench
 INCLUDE = $(RUBY_TB_ROOT)/../include
 FLIST = $(RUBY_TB_ROOT)/flist.f
+FLIST_SLICED_LLC = $(RUBY_TB_ROOT)/flist_sliced_llc.f
 FLIST_MESH = $(PROJ_ROOT)/flist/mesh.syn.f
 dump_on = 0
 debug_print_on = 1
@@ -37,7 +38,7 @@ opt_define=+define+S_TO_M_NO_DATA_TRANSFER \
 bl_define=+define+SINGLE_VC_PER_INPUT_PORT
 
 
-default: bld
+default: bld_sliced
 
 bld:
 	-mkdir $(sim_log)
@@ -46,6 +47,16 @@ bld:
 	vcs \
 	$(opt_define) \
 	+vcs+loopreport +vcs+lic+wait -sverilog +v2k -kdb +vc +error+10 -CC "-I$(INCLUDE)" -F "$(FLIST)"  +define+RUBY +lint=TFIPC-L +lint=PCWM -full64 -timescale=1ns/1ps -debug_access -debug_pp -l bld.log  -debug_all
+	cp simv $(sim_log) 
+	# $(run_cmd)
+
+bld_sliced:
+	-mkdir $(sim_log)
+	echo "$(run_cmd)" > $(sim_log)/rerun
+	chmod +x $(sim_log)/rerun
+	vcs \
+	$(opt_define) \
+	+vcs+loopreport +vcs+lic+wait -sverilog +v2k -kdb +vc +error+1 -CC "-I$(INCLUDE)" -F "$(FLIST_SLICED_LLC)" +define+SLICED_LLC +define+RUBY +lint=TFIPC-L +lint=PCWM -full64 -timescale=1ns/1ps -debug_access -debug_pp -l bld.log  -debug_all
 	cp simv $(sim_log) 
 	# $(run_cmd)
 
@@ -114,3 +125,4 @@ clean:
 	-rm *.log
 	-rm *.fsdb
 	-rm *.rc
+	-rm verdi_config_file

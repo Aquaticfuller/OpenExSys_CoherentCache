@@ -1,5 +1,5 @@
 `timescale 1ns/1ps
-module top
+module top_whole_llc
     import rvh_pkg::*;
     import uop_encoding_pkg::*;
     import rvh_l1d_cc_pkg::*;
@@ -73,7 +73,7 @@ module top
     if(dumpon > 0) begin
       // $fsdbDumpfile(wav);
       $fsdbAutoSwitchDumpfile(1000,wav,0);
-      $fsdbDumpvars(0,top);
+      $fsdbDumpvars(0,top_whole_llc);
       $fsdbDumpvars("+struct");
       $fsdbDumpvars("+mda");
       $fsdbDumpvars("+all");
@@ -828,7 +828,7 @@ endgenerate
 
 
 
-//
+//rn
 generate
   for(genvar core_id = 0; core_id < L1D_NUM; core_id++) begin: gen_rn_tile
     if(core_id == 0) begin
@@ -1525,10 +1525,10 @@ always_ff @(posedge clk or negedge rst_n) begin
     rt_err_resp_data_mismatch_ent_q <= '0;
     check_data_q_q                  <= '0;
     check_port_update_resp_data_q   <= '0;
-  end else if(top.rubytest_top_u.rubytest_check_table_u.rt_err_resp_data_mismatch_d) begin
-    rt_err_resp_data_mismatch_ent_q <= top.rubytest_top_u.rubytest_check_table_u.rt_err_resp_data_mismatch_ent;
-    check_data_q_q                  <= top.rubytest_top_u.rubytest_check_table_u.check_data_q;
-    check_port_update_resp_data_q   <= top.rubytest_top_u.rubytest_check_table_u.check_port_update_resp_data;
+  end else if(top_whole_llc.rubytest_top_u.rubytest_check_table_u.rt_err_resp_data_mismatch_d) begin
+    rt_err_resp_data_mismatch_ent_q <= top_whole_llc.rubytest_top_u.rubytest_check_table_u.rt_err_resp_data_mismatch_ent;
+    check_data_q_q                  <= top_whole_llc.rubytest_top_u.rubytest_check_table_u.check_data_q;
+    check_port_update_resp_data_q   <= top_whole_llc.rubytest_top_u.rubytest_check_table_u.check_port_update_resp_data;
   end
 end
 `endif
@@ -1688,8 +1688,8 @@ always_ff @(posedge clk) begin
 
 `ifdef RUBY
   `ifdef RT_MODE_CLASSIC
-  if(top.rubytest_top_u.rt_debug_info.err_resp_data_mismatch) begin
-    $display("CHECK NUM: %d, cycle:%d ....", top.rubytest_top_u.rt_debug_info.stats_trans_ok_cnt[63:0], cycle);
+  if(top_whole_llc.rubytest_top_u.rt_debug_info.err_resp_data_mismatch) begin
+    $display("CHECK NUM: %d, cycle:%d ....", top_whole_llc.rubytest_top_u.rt_debug_info.stats_trans_ok_cnt[63:0], cycle);
     $display("---------- ERROR: err resp data mismatch-------");
     for(int i = 0; i < RT_CHECK_NUM; i++) begin
       if(rt_err_resp_data_mismatch_ent_q[i]) begin
@@ -1700,37 +1700,37 @@ always_ff @(posedge clk) begin
     $finish();
   end
   `endif
-  else if(top.rubytest_top_u.rt_debug_info.err_resp_timeout) begin
-    $display("CHECK NUM: %d, cycle:%d ....", top.rubytest_top_u.rt_debug_info.stats_trans_ok_cnt[63:0], cycle);
+  else if(top_whole_llc.rubytest_top_u.rt_debug_info.err_resp_timeout) begin
+    $display("CHECK NUM: %d, cycle:%d ....", top_whole_llc.rubytest_top_u.rt_debug_info.stats_trans_ok_cnt[63:0], cycle);
     $display("---------- ERROR: err resp timeout");
     for(int cc = 0; cc < RT_CHECK_NUM; cc++) begin
-      if(top.rubytest_top_u.rubytest_check_table_u.rt_err_resp_timeout_ent[cc]) begin
-        $display("[core %2d, read port %2d](for each core, port 0-3 = port r0 w0 r1 w0)", top.rubytest_top_u.rubytest_check_table_u.check_req_core_id_q[cc]/2, top.rubytest_top_u.rubytest_check_table_u.check_req_core_id_q[cc]%2);
-        $display("check_state_q = %s", top.rubytest_top_u.rubytest_check_table_u.check_state_q[cc].name());
-        $display("req sent cycle = %d", top.rubytest_top_u.rubytest_check_table_u.check_req_cycle_q[cc]);
+      if(top_whole_llc.rubytest_top_u.rubytest_check_table_u.rt_err_resp_timeout_ent[cc]) begin
+        $display("[core %2d, read port %2d](for each core, port 0-3 = port r0 w0 r1 w0)", top_whole_llc.rubytest_top_u.rubytest_check_table_u.check_req_core_id_q[cc]/2, top_whole_llc.rubytest_top_u.rubytest_check_table_u.check_req_core_id_q[cc]%2);
+        $display("check_state_q = %s", top_whole_llc.rubytest_top_u.rubytest_check_table_u.check_state_q[cc].name());
+        $display("req sent cycle = %d", top_whole_llc.rubytest_top_u.rubytest_check_table_u.check_req_cycle_q[cc]);
         $display("check_id       = 0x%x", cc);
-        $display("paddr     = 0x%x", top.rubytest_top_u.rubytest_check_table_u.check_addr_q[cc]);
+        $display("paddr     = 0x%x", top_whole_llc.rubytest_top_u.rubytest_check_table_u.check_addr_q[cc]);
       end
     end
     $finish();
   end
-  else if(top.rubytest_top_u.rt_debug_info.err_put_by_invalid_trans_id) begin
-    $display("CHECK NUM: %d, cycle:%d ....", top.rubytest_top_u.rt_debug_info.stats_trans_ok_cnt[63:0], cycle);
+  else if(top_whole_llc.rubytest_top_u.rt_debug_info.err_put_by_invalid_trans_id) begin
+    $display("CHECK NUM: %d, cycle:%d ....", top_whole_llc.rubytest_top_u.rt_debug_info.stats_trans_ok_cnt[63:0], cycle);
     $display("---------- ERROR: err put by invalid trans id----------");
     $finish();
   end
-  else if(top.rubytest_top_u.rt_debug_info.err_poll_by_invalid_trans_id) begin
-    $display("CHECK NUM: %d, cycle:%d ....", top.rubytest_top_u.rt_debug_info.stats_trans_ok_cnt[63:0], cycle);
+  else if(top_whole_llc.rubytest_top_u.rt_debug_info.err_poll_by_invalid_trans_id) begin
+    $display("CHECK NUM: %d, cycle:%d ....", top_whole_llc.rubytest_top_u.rt_debug_info.stats_trans_ok_cnt[63:0], cycle);
     $display("---------- ERROR: err poll by invalid trans id---------");
     $finish();
   end
-  else if(top.rubytest_top_u.rt_debug_info.err_resp_in_invalid_state) begin
-    $display("CHECK NUM: %d, cycle:%d ....", top.rubytest_top_u.rt_debug_info.stats_trans_ok_cnt[63:0], cycle);
+  else if(top_whole_llc.rubytest_top_u.rt_debug_info.err_resp_in_invalid_state) begin
+    $display("CHECK NUM: %d, cycle:%d ....", top_whole_llc.rubytest_top_u.rt_debug_info.stats_trans_ok_cnt[63:0], cycle);
     $display("---------- ERROR: err resp in invalid state-----");
     $finish();
   end
-  else if(top.rubytest_top_u.rt_debug_info.err_ready_in_invalid_state) begin
-    $display("CHECK NUM: %d, cycle:%d ....", top.rubytest_top_u.rt_debug_info.stats_trans_ok_cnt[63:0], cycle);
+  else if(top_whole_llc.rubytest_top_u.rt_debug_info.err_ready_in_invalid_state) begin
+    $display("CHECK NUM: %d, cycle:%d ....", top_whole_llc.rubytest_top_u.rt_debug_info.stats_trans_ok_cnt[63:0], cycle);
     $display("---------- ERROR: err ready in invalid state-----");
     $finish();
   end
@@ -1769,23 +1769,23 @@ initial begin
   
   repeat(timeout_count) @(posedge clk);
   $display("TIMEOUT SIM %d times ....", timeout_count);
-  $display("CHECK NUM: %d ....", top.rubytest_top_u.rt_debug_info.stats_trans_ok_cnt[63:0]);
-  if(top.rubytest_top_u.rt_debug_info.err_resp_data_mismatch) begin
+  $display("CHECK NUM: %d ....", top_whole_llc.rubytest_top_u.rt_debug_info.stats_trans_ok_cnt[63:0]);
+  if(top_whole_llc.rubytest_top_u.rt_debug_info.err_resp_data_mismatch) begin
     $display("---------- ERROR: err resp data mismatch-------");
   end
-  else if(top.rubytest_top_u.rt_debug_info.err_resp_timeout) begin
+  else if(top_whole_llc.rubytest_top_u.rt_debug_info.err_resp_timeout) begin
     $display("---------- ERROR: err resp timeout");
   end
-  else if(top.rubytest_top_u.rt_debug_info.err_put_by_invalid_trans_id) begin
+  else if(top_whole_llc.rubytest_top_u.rt_debug_info.err_put_by_invalid_trans_id) begin
     $display("---------- ERROR: err put by invalid trans id----------");
   end
-  else if(top.rubytest_top_u.rt_debug_info.err_poll_by_invalid_trans_id) begin
+  else if(top_whole_llc.rubytest_top_u.rt_debug_info.err_poll_by_invalid_trans_id) begin
     $display("---------- ERROR: err poll by invalid trans id---------");
   end
-  else if(top.rubytest_top_u.rt_debug_info.err_resp_in_invalid_state) begin
+  else if(top_whole_llc.rubytest_top_u.rt_debug_info.err_resp_in_invalid_state) begin
     $display("---------- ERROR: err resp in invalid state-----");
   end
-  else if(top.rubytest_top_u.rt_debug_info.err_ready_in_invalid_state) begin
+  else if(top_whole_llc.rubytest_top_u.rt_debug_info.err_ready_in_invalid_state) begin
     $display("---------- ERROR: err ready in invalid state-----");
   end
   else begin

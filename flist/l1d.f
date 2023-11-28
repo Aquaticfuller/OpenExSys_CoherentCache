@@ -80,4 +80,4 @@ $PROJ_ROOT/$L1D_ROOT/ruby/rrv2rvh_ruby_ldmask_trans.sv
 
 $PROJ_ROOT/$L1D_ROOT/trace_input/trace_input.sv
 
-// $PROJ_ROOT/$L1D_ROOT/top.sv
+// $PROJ_ROOT/$L1D_ROOT/top_whole_llc.sv
