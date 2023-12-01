@@ -412,7 +412,7 @@ module rvh_l1d_stb
                                 ~is_in_flush_stb_evict_state  &   // if stb is in fence flush state, don't take any other req
                                 ~(|(ls_pipe_stb_st_req_vld_i[i-1:0] & ls_pipe_l1d_st_req_is_fence_i[i-1:0])) & // if higher priority port is a fence, don't take req from lower priority
                                 ~ls_pipe_l1d_st_req_is_fence_i[i] & // only take fence from port 0
-                                (&(ls_pipe_stb_st_req_vld_i[i-1:0] & st_req_rdy[i-1:0])); // in order store, if higher priority port not ready, lower priority port is not ready too
+                                ((&(ls_pipe_stb_st_req_vld_i[i-1:0] & st_req_rdy[i-1:0])) | ~(|ls_pipe_stb_st_req_vld_i[i-1:0])); // in order store, if higher priority port not ready, lower priority port is not ready too
       end
       assign ls_pipe_stb_st_req_rdy_o[i] = st_req_rdy[i];
     end

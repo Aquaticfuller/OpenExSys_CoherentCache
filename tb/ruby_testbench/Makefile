@@ -7,7 +7,7 @@ dump_on = 0
 debug_print_on = 1
 dc_debug_print_on = 0
 ebi_debug_print_on = 0
-noc_debug_print_on = 0
+noc_debug_print_on = 1
 rseed0 = 2375
 rseed1 = 543
 BUILD_STRING = $(shell date --iso=seconds)
@@ -38,9 +38,9 @@ opt_define=+define+S_TO_M_NO_DATA_TRANSFER \
 bl_define=+define+SINGLE_VC_PER_INPUT_PORT
 
 
-default: bld_sliced
+default: bld_sliced_llc
 
-bld:
+bld_whole_llc:
 	-mkdir $(sim_log)
 	echo "$(run_cmd)" > $(sim_log)/rerun
 	chmod +x $(sim_log)/rerun
@@ -50,7 +50,7 @@ bld:
 	cp simv $(sim_log) 
 	# $(run_cmd)
 
-bld_sliced:
+bld_sliced_llc:
 	-mkdir $(sim_log)
 	echo "$(run_cmd)" > $(sim_log)/rerun
 	chmod +x $(sim_log)/rerun
@@ -89,7 +89,10 @@ bld_trace_bl:
 	# $(run_cmd)
 
 run:
-	$(run_cmd) # > run_$(debug_print_on).log # 2>&1 | tee run_$(debug_print_on).log # 
+	$(run_cmd) 2>&1 | tee run_$(debug_print_on).log # > run_$(debug_print_on).log
+
+run_gui:
+	./simv -gui -i gui_init.tcl
 
 run_trace:
 	$(run_cmd) \

@@ -71,8 +71,8 @@ module top_sliced_llc
     wav = {log,"/waves_",dump_name,".fsdb"};
     $display("!!!!!!wave_log= %s",wav);
     if(dumpon > 0) begin
-      // $fsdbDumpfile(wav);
-      $fsdbAutoSwitchDumpfile(1000,wav,0);
+      $fsdbDumpfile(wav);
+      // $fsdbAutoSwitchDumpfile(1000,wav,0);
       $fsdbDumpvars(0,top_sliced_llc);
       $fsdbDumpvars("+struct");
       $fsdbDumpvars("+mda");
@@ -99,12 +99,12 @@ module top_sliced_llc
   //   end
   // end
 
-  int debug_print= 0;
+  int debug_print= 1;
   int ebi_debug_print= 0;
 `ifdef RUBY
-  int rseed0 = RT_CHECK_GEN_ADDR_W'(1<<(RT_CHECK_GEN_ADDR_W-1));//?
-  int rseed1 = $bits(lsu_op_e)'(1<<($bits(lsu_op_e)-1));//?
-  int timeout_count= 20000;
+  int rseed0 = RT_CHECK_GEN_ADDR_W'(1<<(RT_CHECK_GEN_ADDR_W-1));
+  int rseed1 = $bits(lsu_op_e)'(1<<($bits(lsu_op_e)-1));
+  int timeout_count= 1000000000;
   
   `ifdef RT_MODE_CLASSIC
   logic [RT_CID_DELTA_NUM_W-1:0]    _rt_cid_delta_seed = '0;
@@ -456,7 +456,11 @@ generate
 
       // LS_PIPE -> D$ : ST Request
       for(int i = 0; i < LSU_DATA_PIPE_COUNT; i++) begin
-        ls_pipe_l1d_st_req_vld       [core_id][i] = lsu_l1d_st_req_valid[core_id][i];
+        // if(core_id < 100) begin
+          ls_pipe_l1d_st_req_vld       [core_id][i] = lsu_l1d_st_req_valid[core_id][i];
+        // end else begin
+        //   ls_pipe_l1d_st_req_vld       [core_id][i] = '0;
+        // end
         ls_pipe_l1d_st_req_io_region [core_id][i] = 1'b0;
         ls_pipe_l1d_st_req_is_fence  [core_id][i] = 1'b0;
         ls_pipe_l1d_st_req_rob_tag   [core_id][i] = lsu_l1d_st_req[core_id][i].rob_id;
@@ -739,7 +743,7 @@ endgenerate
 
 //
 generate
-  for(genvar core_id = 0; core_id < L1D_NUM; core_id++) begin: gen_rn_tile
+  for(genvar core_id = 0; core_id < L1D_NUM; core_id++) begin: gen_mixed_tile
     mixed_tile
     #(
       .CHANNEL_NUM(CHANNEL_NUM),
@@ -797,28 +801,28 @@ generate
         .l1d_lsu_lsu_tag (l1d_lsu_lsu_tag[core_id]),
         `endif
 
-        .tx_flit_pend_o (tx_flit_pend[(core_id + 1) % NODE_NUM_X_DIMESION][(core_id + 1) / NODE_NUM_X_DIMESION]),
-        .tx_flit_v_o (tx_flit_v[(core_id + 1) % NODE_NUM_X_DIMESION][(core_id + 1) / NODE_NUM_X_DIMESION]),
-        .tx_flit_vc_id_o (tx_flit_vc_id[(core_id + 1) % NODE_NUM_X_DIMESION][(core_id + 1) / NODE_NUM_X_DIMESION]),
-        .tx_flit_look_ahead_routing_o (tx_flit_look_ahead_routing[(core_id + 1) % NODE_NUM_X_DIMESION][(core_id + 1) / NODE_NUM_X_DIMESION]),
-        .rx_flit_pend_i (rx_flit_pend[(core_id + 1) % NODE_NUM_X_DIMESION][(core_id + 1) / NODE_NUM_X_DIMESION]),
-        .rx_flit_v_i (rx_flit_v[(core_id + 1) % NODE_NUM_X_DIMESION][(core_id + 1) / NODE_NUM_X_DIMESION]),
-        .rx_flit_vc_id_i (rx_flit_vc_id[(core_id + 1) % NODE_NUM_X_DIMESION][(core_id + 1) / NODE_NUM_X_DIMESION]),
-        .rx_flit_look_ahead_routing_i (rx_flit_look_ahead_routing[(core_id + 1) % NODE_NUM_X_DIMESION][(core_id + 1) / NODE_NUM_X_DIMESION]),
-        .tx_lcrd_v_i (tx_lcrd_v[(core_id + 1) % NODE_NUM_X_DIMESION][(core_id + 1) / NODE_NUM_X_DIMESION]),
-        .tx_lcrd_id_i (tx_lcrd_id[(core_id + 1) % NODE_NUM_X_DIMESION][(core_id + 1) / NODE_NUM_X_DIMESION]),
-        .rx_lcrd_v_o (rx_lcrd_v[(core_id + 1) % NODE_NUM_X_DIMESION][(core_id + 1) / NODE_NUM_X_DIMESION]),
-        .rx_lcrd_id_o (rx_lcrd_id[(core_id + 1) % NODE_NUM_X_DIMESION][(core_id + 1) / NODE_NUM_X_DIMESION]),
-        .tx_flit_channel_0_o (tx_flit_channel_0[(core_id + 1) % NODE_NUM_X_DIMESION][(core_id + 1) / NODE_NUM_X_DIMESION]),
-        .tx_flit_channel_1_o (tx_flit_channel_1[(core_id + 1) % NODE_NUM_X_DIMESION][(core_id + 1) / NODE_NUM_X_DIMESION]),
-        .tx_flit_channel_2_o (tx_flit_channel_2[(core_id + 1) % NODE_NUM_X_DIMESION][(core_id + 1) / NODE_NUM_X_DIMESION]),
-        .tx_flit_channel_3_o (tx_flit_channel_3[(core_id + 1) % NODE_NUM_X_DIMESION][(core_id + 1) / NODE_NUM_X_DIMESION]),
-        .tx_flit_channel_4_o (tx_flit_channel_4[(core_id + 1) % NODE_NUM_X_DIMESION][(core_id + 1) / NODE_NUM_X_DIMESION]),
-        .rx_flit_channel_0_i (rx_flit_channel_0[(core_id + 1) % NODE_NUM_X_DIMESION][(core_id + 1) / NODE_NUM_X_DIMESION]),
-        .rx_flit_channel_1_i (rx_flit_channel_1[(core_id + 1) % NODE_NUM_X_DIMESION][(core_id + 1) / NODE_NUM_X_DIMESION]),
-        .rx_flit_channel_2_i (rx_flit_channel_2[(core_id + 1) % NODE_NUM_X_DIMESION][(core_id + 1) / NODE_NUM_X_DIMESION]),
-        .rx_flit_channel_3_i (rx_flit_channel_3[(core_id + 1) % NODE_NUM_X_DIMESION][(core_id + 1) / NODE_NUM_X_DIMESION]),
-        .rx_flit_channel_4_i (rx_flit_channel_4[(core_id + 1) % NODE_NUM_X_DIMESION][(core_id + 1) / NODE_NUM_X_DIMESION]),
+        .tx_flit_pend_o (tx_flit_pend[(core_id) % NODE_NUM_X_DIMESION][(core_id) / NODE_NUM_X_DIMESION]),
+        .tx_flit_v_o (tx_flit_v[(core_id) % NODE_NUM_X_DIMESION][(core_id) / NODE_NUM_X_DIMESION]),
+        .tx_flit_vc_id_o (tx_flit_vc_id[(core_id) % NODE_NUM_X_DIMESION][(core_id) / NODE_NUM_X_DIMESION]),
+        .tx_flit_look_ahead_routing_o (tx_flit_look_ahead_routing[(core_id) % NODE_NUM_X_DIMESION][(core_id) / NODE_NUM_X_DIMESION]),
+        .rx_flit_pend_i (rx_flit_pend[(core_id) % NODE_NUM_X_DIMESION][(core_id) / NODE_NUM_X_DIMESION]),
+        .rx_flit_v_i (rx_flit_v[(core_id) % NODE_NUM_X_DIMESION][(core_id) / NODE_NUM_X_DIMESION]),
+        .rx_flit_vc_id_i (rx_flit_vc_id[(core_id) % NODE_NUM_X_DIMESION][(core_id) / NODE_NUM_X_DIMESION]),
+        .rx_flit_look_ahead_routing_i (rx_flit_look_ahead_routing[(core_id) % NODE_NUM_X_DIMESION][(core_id) / NODE_NUM_X_DIMESION]),
+        .tx_lcrd_v_i (tx_lcrd_v[(core_id) % NODE_NUM_X_DIMESION][(core_id) / NODE_NUM_X_DIMESION]),
+        .tx_lcrd_id_i (tx_lcrd_id[(core_id) % NODE_NUM_X_DIMESION][(core_id) / NODE_NUM_X_DIMESION]),
+        .rx_lcrd_v_o (rx_lcrd_v[(core_id) % NODE_NUM_X_DIMESION][(core_id) / NODE_NUM_X_DIMESION]),
+        .rx_lcrd_id_o (rx_lcrd_id[(core_id) % NODE_NUM_X_DIMESION][(core_id) / NODE_NUM_X_DIMESION]),
+        .tx_flit_channel_0_o (tx_flit_channel_0[(core_id) % NODE_NUM_X_DIMESION][(core_id) / NODE_NUM_X_DIMESION]),
+        .tx_flit_channel_1_o (tx_flit_channel_1[(core_id) % NODE_NUM_X_DIMESION][(core_id) / NODE_NUM_X_DIMESION]),
+        .tx_flit_channel_2_o (tx_flit_channel_2[(core_id) % NODE_NUM_X_DIMESION][(core_id) / NODE_NUM_X_DIMESION]),
+        .tx_flit_channel_3_o (tx_flit_channel_3[(core_id) % NODE_NUM_X_DIMESION][(core_id) / NODE_NUM_X_DIMESION]),
+        .tx_flit_channel_4_o (tx_flit_channel_4[(core_id) % NODE_NUM_X_DIMESION][(core_id) / NODE_NUM_X_DIMESION]),
+        .rx_flit_channel_0_i (rx_flit_channel_0[(core_id) % NODE_NUM_X_DIMESION][(core_id) / NODE_NUM_X_DIMESION]),
+        .rx_flit_channel_1_i (rx_flit_channel_1[(core_id) % NODE_NUM_X_DIMESION][(core_id) / NODE_NUM_X_DIMESION]),
+        .rx_flit_channel_2_i (rx_flit_channel_2[(core_id) % NODE_NUM_X_DIMESION][(core_id) / NODE_NUM_X_DIMESION]),
+        .rx_flit_channel_3_i (rx_flit_channel_3[(core_id) % NODE_NUM_X_DIMESION][(core_id) / NODE_NUM_X_DIMESION]),
+        .rx_flit_channel_4_i (rx_flit_channel_4[(core_id) % NODE_NUM_X_DIMESION][(core_id) / NODE_NUM_X_DIMESION]),
 
         .node_id_x_i ((core_id) % NODE_NUM_X_DIMESION),
         .node_id_y_i ((core_id) / NODE_NUM_X_DIMESION),

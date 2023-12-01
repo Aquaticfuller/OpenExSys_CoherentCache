@@ -94,6 +94,8 @@ logic[ENTRY_NUM-1:0]                       mlfb_err_nxt;
 logic[ENTRY_NUM-1:0]                       mlfb_err;
 logic[ENTRY_NUM-1:0][SCU_TID_W-1:0]        scu_tid_nxt;
 logic[ENTRY_NUM-1:0][SCU_TID_W-1:0]        scu_tid;
+logic[ENTRY_NUM-1:0][SCU_SLICE_NUM_W-1:0]  scu_sid_nxt;
+logic[ENTRY_NUM-1:0][SCU_SLICE_NUM_W-1:0]  scu_sid;
 logic[ENTRY_NUM-1:0][$bits(rrv64_mesi_type_e)-1:0] mlfb_mesi_sta_nxt;
 logic[ENTRY_NUM-1:0][$bits(rrv64_mesi_type_e)-1:0] mlfb_mesi_sta;
 logic[ENTRY_NUM-1:0][DATA_BURST_NUM-1:0][DATA_LENGTH_PER_PKG-1:0] mlfb_data_nxt;
@@ -171,6 +173,7 @@ logic                              head_buf_line_dat_vld_nxt;
 logic[N_MSHR_W-1:0] head_buf_mshr_idx_nxt;
 logic head_buf_err_nxt ;
 logic[SCU_TID_W-1:0] head_buf_scu_tid_nxt ;
+logic[SCU_SLICE_NUM_W-1:0] head_buf_scu_sid_nxt ;
 rrv64_mesi_type_e head_buf_mesi_sta_nxt ;
 rrv64_l1d_req_type_dec_t head_buf_lsu_req_type_dec_nxt;
 // logic[RRV64_SCU_SST_IDX_W-1:0] head_buf_sst_idx_nxt ;
@@ -252,6 +255,8 @@ generate
     assign mlfb_err_nxt[jj]         = '0;
     assign scu_tid_nxt[jj]          = mlfb_mshr_info_from_resp_set[jj] ? scu_pc_resp_i.id.scu_tid :
                                                                          scu_pc_data_i.id.scu_tid;
+    assign scu_sid_nxt[jj]          = mlfb_mshr_info_from_resp_set[jj] ? scu_pc_resp_i.id.sid :
+                                                                         scu_pc_data_i.id.sid;
 
     assign mlfb_mesi_sta_nxt[jj]    = mlfb_mshr_info_from_resp_set[jj]      ? MODIFIED :
                                       (scu_pc_data_i.rtype == CompData_I)   ? INVALID :
@@ -287,6 +292,7 @@ generate
     std_dffe #(.WIDTH(N_MSHR_W)) U_DAT_REG_MSHR_IDX (.clk(clk), .en(mlfb_mshr_info_set[jj]), .d(mlfb_mshr_idx_nxt[jj]), .q((mlfb_mshr_idx[jj])));
     std_dffe #(.WIDTH(1)) U_DAT_REG_ERR (.clk(clk), .en(mlfb_mshr_info_set[jj]), .d(mlfb_err_nxt[jj]), .q((mlfb_err[jj])));
     std_dffe #(.WIDTH(SCU_TID_W)) U_DAT_REG_SCU_ID (.clk(clk), .en(mlfb_mshr_info_set[jj]), .d(scu_tid_nxt[jj]), .q((scu_tid[jj])));
+    std_dffe #(.WIDTH(SCU_SLICE_NUM_W)) U_DAT_REG_SID (.clk(clk), .en(mlfb_mshr_info_set[jj]), .d(scu_sid_nxt[jj]), .q((scu_sid[jj])));
     std_dffe #(.WIDTH($bits(rrv64_mesi_type_e))) U_DAT_REG_MESI_STA (.clk(clk), .en(mlfb_mshr_info_set[jj]), .d(mlfb_mesi_sta_nxt[jj]), .q(mlfb_mesi_sta[jj]));
     for(genvar data_seg_id = 0; data_seg_id < DATA_BURST_NUM; data_seg_id++) begin
       std_dffe #(.WIDTH(DATA_LENGTH_PER_PKG)) U_DAT_REG_DATA (.clk(clk), .en(mlfb_data_ena[jj][data_seg_id]), .d(mlfb_data_nxt[jj][data_seg_id]), .q(mlfb_data[jj][data_seg_id]));
@@ -302,6 +308,7 @@ generate
     assign mlfb_fifo[jj].mshr_idx   = mlfb_mshr_idx[jj];
     assign mlfb_fifo[jj].err        = mlfb_err[jj];
     assign mlfb_fifo[jj].scu_tid    = scu_tid[jj];
+    assign mlfb_fifo[jj].scu_sid    = scu_sid[jj];
     assign mlfb_fifo[jj].mesi_sta   = rrv64_mesi_type_e'(mlfb_mesi_sta[jj]);
     assign mlfb_fifo[jj].data       = mlfb_data[jj];
     assign mlfb_fifo[jj].data_valid = mlfb_data_valid[jj];
@@ -370,6 +377,7 @@ assign head_buf_line_dat_vld_nxt = mlfb_fifo[head_idx].data_valid;
 assign head_buf_mshr_idx_nxt = mlfb_fifo[head_idx].mshr_idx;
 assign head_buf_err_nxt      = mlfb_fifo[head_idx].err;
 assign head_buf_scu_tid_nxt  = mlfb_fifo[head_idx].scu_tid;
+assign head_buf_scu_sid_nxt  = mlfb_fifo[head_idx].scu_sid;
 assign head_buf_mesi_sta_nxt = mlfb_fifo[head_idx].mesi_sta;
 assign head_buf_paddr_nxt = {mlfb_mshr_head_rd_mshr_entry.new_tag, mlfb_mshr_head_rd_mshr_entry.bank_index, BANK_ID[L1D_BANK_ID_INDEX_WIDTH-1:0], mlfb_mshr_head_rd_mshr_entry.offset};
 assign head_buf_rob_tag_nxt = mlfb_mshr_head_rd_mshr_entry.rob_tag;
@@ -413,6 +421,7 @@ std_dffe #(.WIDTH(1)) U_DAT_REG_HEAD_BUF_LINE_DAT_VLD (.clk(clk), .en(head_buf_v
 std_dffe #(.WIDTH(N_MSHR_W))U_DAT_REG_HEAD_BUF_MSHR_IDX (.clk(clk), .en(head_buf_valid_set),  .d(head_buf_mshr_idx_nxt), .q(head_buf.mshr_idx));
 std_dffe #(.WIDTH(1))U_DAT_REG_HEAD_BUF_LINE_ERR (.clk(clk), .en(head_buf_valid_set), .d(head_buf_err_nxt), .q(head_buf.err));
 std_dffe #(.WIDTH(SCU_TID_W))U_DAT_REG_HEAD_BUF_LINE_SCU_TID (.clk(clk), .en(head_buf_valid_set), .d(head_buf_scu_tid_nxt), .q(head_buf.scu_tid));
+std_dffe #(.WIDTH(SCU_SLICE_NUM_W))U_DAT_REG_HEAD_BUF_LINE_SCU_SID (.clk(clk), .en(head_buf_valid_set), .d(head_buf_scu_sid_nxt), .q(head_buf.scu_sid));
 std_dffe #(.WIDTH($bits(rrv64_mesi_type_e)))U_DAT_REG_MESI_STA(.clk(clk), .en(head_buf_valid_set), .d(head_buf_mesi_sta_nxt), .q(head_buf.mesi_sta));
 std_dffe#(.WIDTH($bits(head_buf_paddr_nxt)))U_DAT_REG_HEAD_BUF_PADDR(.clk(clk),.en(head_buf_valid_set),.d(head_buf_paddr_nxt),.q(head_buf.paddr));
 std_dffe#(.WIDTH($bits(head_buf_rob_tag_nxt)))U_DAT_REG_HEAD_BUF_ROB_TAG(.clk(clk),.en(head_buf_valid_set),.d(head_buf_rob_tag_nxt),.q(head_buf.rob_tag));
@@ -623,6 +632,7 @@ assign pc_scu_resp_o.id.cid     = CORE_ID;
 assign pc_scu_resp_o.id.bid     = BANK_ID;
 assign pc_scu_resp_o.id.pc_tid  = head_buf.mshr_idx;
 assign pc_scu_resp_o.id.scu_tid = head_buf.scu_tid;
+assign pc_scu_resp_o.id.sid     = head_buf.scu_sid;
 assign pc_scu_resp_o.rtype      = FinishTrans_Ack;
 
 assign pc_scu_resp_o.src_id     = '0;

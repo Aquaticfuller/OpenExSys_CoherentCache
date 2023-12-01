@@ -259,6 +259,7 @@ assign scu_pc_evict_resp_vld  = scu_evict_buf_order_fifo_dq_hsk_o & evict_req_ne
 assign scu_pc_evict_resp.id.cid     = scu_evict_buf_order_fifo_dq_pl.id.cid;
 assign scu_pc_evict_resp.id.bid     = scu_evict_buf_order_fifo_dq_pl.id.bid;
 assign scu_pc_evict_resp.id.pc_tid  = scu_evict_buf_order_fifo_dq_pl.id.pc_tid;
+assign scu_pc_evict_resp.id.sid     = '0; // assign outside of scu
 assign scu_pc_evict_resp.id.scu_tid = '0; // not used
 assign scu_pc_evict_resp.rtype      = WriteBack_Ack;
 assign scu_pc_evict_resp.src_id     = '0;

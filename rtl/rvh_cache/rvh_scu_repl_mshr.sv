@@ -308,6 +308,7 @@ scu_mshr_evict_mshr_id_sel
 
 assign scu_pc_snp_vld_o        = snp_to_cache_fifo_dout_vld & snp_need_to_send_list_sel_vld;
 // assign scu_pc_snp_o.send_list  = mshr_q[snp_to_cache_fifo_dout].snp_need_to_send_list;
+assign scu_pc_snp_o.id.sid     = '0; // assign it outside scu
 assign scu_pc_snp_o.id.scu_tid = {1'b1, (SCU_TID_W-1)'(snp_to_cache_fifo_dout)};
 assign scu_pc_snp_o.id.cid     = snp_need_to_send_list_sel_idx;
 assign scu_pc_snp_o.rtype      = mshr_q[snp_to_cache_fifo_dout].need_invalid_snp ? SnpUnique
@@ -637,6 +638,7 @@ assign scu_pc_resp_vld_o  = resp_to_requestor_fifo_dout_vld;
 assign scu_pc_resp_o.id.cid     = mshr_q[resp_to_requestor_fifo_dout].wb_pc_id.cid;
 assign scu_pc_resp_o.id.bid     = mshr_q[resp_to_requestor_fifo_dout].wb_pc_id.bid;
 assign scu_pc_resp_o.id.pc_tid  = mshr_q[resp_to_requestor_fifo_dout].wb_pc_id.pc_tid;
+assign scu_pc_resp_o.id.sid     = '0; // assign it outside scu
 assign scu_pc_resp_o.id.scu_tid = {1'b1, (SCU_TID_W-1)'(resp_to_requestor_fifo_dout)};
 assign scu_pc_resp_o.rtype      = WriteBack_Ack;
 

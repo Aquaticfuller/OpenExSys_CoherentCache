@@ -76,6 +76,7 @@ module rvh_l1d_ewrq
   logic aw_fifo_wb_ack_received_ena;
   
   logic [SCU_TID_W-1:0] scu_tid_d, scu_tid_q;
+  logic [SCU_SLICE_NUM_W-1:0] scu_sid_d, scu_sid_q;
   logic scu_tid_ena;
 
   ewrq_entry_t aw_fifo_din, aw_fifo_dout;
@@ -154,6 +155,7 @@ module rvh_l1d_ewrq
   assign aw_fifo_wb_ack_received_d   = (aw_fifo_wb_ack_received_q | aw_fifo_wb_ack_received_set) & ~aw_fifo_wb_ack_received_clr ;
 
   assign scu_tid_d   = scu_pc_resp_i.id.scu_tid;
+  assign scu_sid_d   = scu_pc_resp_i.id.sid;
   assign scu_tid_ena = aw_fifo_wb_ack_received_set;
 
   assign aw_fifo_re  = w_fifo_re | (aw_fifo_sent_q & ~aw_fifo_dout.data_valid & aw_fifo_wb_ack_received_set);
@@ -208,6 +210,7 @@ module rvh_l1d_ewrq
   assign pc_scu_data_o.id.bid     = {1'b0, BANK_ID[CACHE_MASTERID_W-1:0]}; // msb 1 represents d$;
   assign pc_scu_data_o.id.pc_tid  = '0;
   assign pc_scu_data_o.id.scu_tid = scu_tid_q;
+  assign pc_scu_data_o.id.sid     = scu_sid_q;
 `ifdef PRIVATE_CACHE_TO_SCU_DATA_WRITEBACK_DIRTY_PART_ONLY
   assign pc_scu_data_o.rtype      = WriteBackPartialData;
 `else
@@ -246,11 +249,12 @@ module rvh_l1d_ewrq
 
   //==========================================================
 
-  always_ff @ (posedge clk) begin
+  always_ff @ (posedge clk or negedge rst) begin
     if (~rst) begin
       aw_fifo_sent_q            <= '0;
       aw_fifo_wb_ack_received_q <= '0;
       scu_tid_q                 <= '0;
+      scu_sid_q                 <= '0;
     end else begin      
       if(aw_fifo_sent_ena) begin
         aw_fifo_sent_q <= aw_fifo_sent_d;
@@ -260,6 +264,7 @@ module rvh_l1d_ewrq
       end
       if(scu_tid_ena) begin
         scu_tid_q <= scu_tid_d;
+        scu_sid_q <= scu_sid_d;
       end
     end
   end

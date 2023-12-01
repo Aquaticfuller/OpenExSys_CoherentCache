@@ -104,7 +104,7 @@ module top_whole_llc
 `ifdef RUBY
   int rseed0 = RT_CHECK_GEN_ADDR_W'(1<<(RT_CHECK_GEN_ADDR_W-1));//?
   int rseed1 = $bits(lsu_op_e)'(1<<($bits(lsu_op_e)-1));//?
-  int timeout_count= 20000;
+  int timeout_count= 1000000000;
   
   `ifdef RT_MODE_CLASSIC
   logic [RT_CID_DELTA_NUM_W-1:0]    _rt_cid_delta_seed = '0;

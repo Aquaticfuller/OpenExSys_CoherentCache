@@ -19,7 +19,8 @@ import rvh_uncore_param_pkg::*;
 
   localparam CACHE_MASTERID_W  = $clog2(L1D_BANK_ID_NUM_DUPL) > 0 ? $clog2(L1D_BANK_ID_NUM_DUPL) : 1;
   localparam CACHE_TID_W       = L1D_MSHR_NUM > 1 ? $clog2(L1D_MSHR_NUM) : 1;
-  localparam SCU_MASTERID_W    = 1;
+  localparam SCU_SLICE_NUM     = 9;
+  localparam SCU_SLICE_NUM_W   = $clog2(SCU_SLICE_NUM);
   localparam SCU_TID_W         = $clog2(SCU_MSHR_NUM)+1;
   localparam PRIVATE_CACHE_NUM   = L1D_NUM; // 4 private cache / 4 core
   localparam PRIVATE_CACHE_NUM_W = $clog2(PRIVATE_CACHE_NUM) > 0 ? $clog2(PRIVATE_CACHE_NUM) : 1;
@@ -66,11 +67,13 @@ import rvh_uncore_param_pkg::*;
     logic [PRIVATE_CACHE_NUM_W-1:0] cid;  // private cache id
     logic [CACHE_MASTERID_W-1:0]    bid;  // cache bank id, the highest used for distinguish i$/d$
     logic [CACHE_TID_W-1:0]         pc_tid;  // cache mshr id in req and req's resp
+    logic [SCU_SLICE_NUM_W-1:0]     sid;  // scu slice id
     logic [SCU_TID_W-1:0]           scu_tid;  // scu mshr id in snp, msb to diff scu mshr / repl mshr
   } scu_cc_resp_tid_t;
 
   typedef struct packed {
     logic [PRIVATE_CACHE_NUM_W-1:0] cid;  // private cache id
+    logic [SCU_SLICE_NUM_W-1:0]     sid;  // scu slice id
     logic [SCU_TID_W-1:0]           scu_tid;  // scu mshr id in snp
   } scu_cc_snp_tid_t;
 

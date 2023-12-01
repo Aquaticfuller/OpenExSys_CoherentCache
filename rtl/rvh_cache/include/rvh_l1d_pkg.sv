@@ -590,6 +590,7 @@ typedef struct packed {
     logic [XLEN-1:0]              amo_st_data;
 
     logic [SCU_TID_W-1:0]           scu_tid;  // scu mshr id in snp
+    logic [SCU_SLICE_NUM_W-1:0]     scu_sid;  // scu slice id
 
     // only tag match, no state match result, for S -> M
     logic [L1D_BANK_WAY_NUM-1:0]  tag_compare_data_hit_permission_miss_per_way;
@@ -611,6 +612,7 @@ typedef struct packed {
 `endif
 
   logic [SCU_TID_W-1:0]           scu_tid;  // scu mshr id in snp
+  logic [SCU_SLICE_NUM_W-1:0]     scu_sid;  // scu slice id
 
   // logic [RRV64_SCU_SST_IDX_W-1:0]  sst_idx;
 //  logic                            l2_hit;

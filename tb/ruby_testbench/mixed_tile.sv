@@ -793,7 +793,11 @@ assign rt_all_lcrd_id     [0][ROUTER_PORT_NUMBER+RN_LOCAL_PORT_ID] = '0;
 
 rn_router_sam
 #(
-  .flit_payload_t   (cache_scu_cc_req_t)
+  .flit_payload_t   (cache_scu_cc_req_t),
+  .sliced_llc       ( 1 ),
+  .has_addr         ( 1 ),
+  .interleave_granularity ( 64 ),
+  .llc_slice_num    ( SCU_SLICE_NUM )
 )
 channel_0_decode_rn
 (
@@ -817,6 +821,9 @@ local_port_couple_module
 channel_0_couple_rn (
 .node_id_x_tgt_i  (rx_flit_dec[0][RN_LOCAL_PORT_ID].tgt_id.x_position),
 .node_id_y_tgt_i  (rx_flit_dec[0][RN_LOCAL_PORT_ID].tgt_id.y_position ),
+`ifdef ALLOW_SAME_ROUTER_L2L_TRANSFER
+.device_port_tgt_i(rx_flit_dec[0][RN_LOCAL_PORT_ID].tgt_id.device_port),
+`endif
 
 .node_id_x_src_i  (rx_flit_dec[0][RN_LOCAL_PORT_ID].src_id.x_position ),
 .node_id_y_src_i  (rx_flit_dec[0][RN_LOCAL_PORT_ID].src_id.y_position ),
@@ -846,7 +853,11 @@ assign all_rt_flit_channel_1_without_xy_rn        = pc_cc_arb_resp;
 
 rn_router_sam
 #(
-  .flit_payload_t   (cache_scu_cc_resp_t)
+  .flit_payload_t   (cache_scu_cc_resp_t),
+  .sliced_llc       ( 1 ),
+  .has_addr         ( 0 )
+  // .interleave_granularity ( 64 ),
+  // .llc_slice_num    ( SCU_SLICE_NUM )
 )
 channel_1_decode_rn
 (
@@ -870,6 +881,9 @@ local_port_couple_module
 channel_1_couple_rn (
 .node_id_x_tgt_i  (rx_flit_dec[1][RN_LOCAL_PORT_ID].tgt_id.x_position),
 .node_id_y_tgt_i  (rx_flit_dec[1][RN_LOCAL_PORT_ID].tgt_id.y_position ),
+`ifdef ALLOW_SAME_ROUTER_L2L_TRANSFER
+.device_port_tgt_i(rx_flit_dec[1][RN_LOCAL_PORT_ID].tgt_id.device_port),
+`endif
 
 .node_id_x_src_i  (rx_flit_dec[1][RN_LOCAL_PORT_ID].src_id.x_position ),
 .node_id_y_src_i  (rx_flit_dec[1][RN_LOCAL_PORT_ID].src_id.y_position ),
@@ -909,7 +923,11 @@ assign rt_all_lcrd_id     [2][ROUTER_PORT_NUMBER+RN_LOCAL_PORT_ID] = '0;
 
 rn_router_sam
 #(
-  .flit_payload_t   (cache_scu_cc_req_t)
+  .flit_payload_t   (cache_scu_cc_req_t),
+  .sliced_llc       ( 1 ),
+  .has_addr         ( 1 ),
+  .interleave_granularity ( 64 ),
+  .llc_slice_num    ( SCU_SLICE_NUM )
 )
 channel_2_decode_rn
 (
@@ -933,6 +951,9 @@ local_port_couple_module
 channel_2_couple_rn (
 .node_id_x_tgt_i  (rx_flit_dec[2][RN_LOCAL_PORT_ID].tgt_id.x_position),
 .node_id_y_tgt_i  (rx_flit_dec[2][RN_LOCAL_PORT_ID].tgt_id.y_position ),
+`ifdef ALLOW_SAME_ROUTER_L2L_TRANSFER
+.device_port_tgt_i(rx_flit_dec[2][RN_LOCAL_PORT_ID].tgt_id.device_port),
+`endif
 
 .node_id_x_src_i  (rx_flit_dec[2][RN_LOCAL_PORT_ID].src_id.x_position ),
 .node_id_y_src_i  (rx_flit_dec[2][RN_LOCAL_PORT_ID].src_id.y_position ),
@@ -966,7 +987,11 @@ assign all_rt_flit_channel_3_without_xy_rn           = pc_cc_arb_data;
 
 rn_router_sam
 #(
-  .flit_payload_t   (cache_scu_cc_data_t)
+  .flit_payload_t   (cache_scu_cc_data_t),
+  .sliced_llc       ( 1 ),
+  .has_addr         ( 0 )
+  // .interleave_granularity ( 64 ),
+  // .llc_slice_num    ( SCU_SLICE_NUM )
 )
 channel_3_decode_rn
 (
@@ -990,6 +1015,9 @@ local_port_couple_module
 channel_3_couple_rn (
 .node_id_x_tgt_i  (rx_flit_dec[3][RN_LOCAL_PORT_ID].tgt_id.x_position),
 .node_id_y_tgt_i  (rx_flit_dec[3][RN_LOCAL_PORT_ID].tgt_id.y_position ),
+`ifdef ALLOW_SAME_ROUTER_L2L_TRANSFER
+.device_port_tgt_i(rx_flit_dec[3][RN_LOCAL_PORT_ID].tgt_id.device_port),
+`endif
 
 .node_id_x_src_i  (rx_flit_dec[3][RN_LOCAL_PORT_ID].src_id.x_position ),
 .node_id_y_src_i  (rx_flit_dec[3][RN_LOCAL_PORT_ID].src_id.y_position ),
@@ -1172,7 +1200,8 @@ assign all_rt_flit_channel_1_without_xy_hn                         = scu_cc_arb_
 
 hn_router_sam
 #(
-  .flit_payload_t   (cache_scu_cc_resp_t)
+  .flit_payload_t   (cache_scu_cc_resp_t),
+  .sliced_llc       ( 1 )
 )
 channel_1_decode_hn
 (
@@ -1196,6 +1225,9 @@ local_port_couple_module
 channel_1_couple_hn (
 .node_id_x_tgt_i  (rx_flit_dec[1][HN_LOCAL_PORT_ID].tgt_id.x_position),
 .node_id_y_tgt_i  (rx_flit_dec[1][HN_LOCAL_PORT_ID].tgt_id.y_position ),
+`ifdef ALLOW_SAME_ROUTER_L2L_TRANSFER
+.device_port_tgt_i(rx_flit_dec[1][HN_LOCAL_PORT_ID].tgt_id.device_port),
+`endif
 
 .node_id_x_src_i  (rx_flit_dec[1][HN_LOCAL_PORT_ID].src_id.x_position ),
 .node_id_y_src_i  (rx_flit_dec[1][HN_LOCAL_PORT_ID].src_id.y_position ),
@@ -1245,9 +1277,10 @@ assign all_rt_flit_channel_3_without_xy_hn           = scu_cc_arb_data;
 
 hn_router_sam
 #(
-  .flit_payload_t   (cache_scu_cc_data_t)
+  .flit_payload_t   (cache_scu_cc_data_t),
+  .sliced_llc       ( 1 )
 )
-channel_4_decode_hn
+channel_3_decode_hn
 (
   .flit_v_i     (all_rt_flit_v      [3][ROUTER_PORT_NUMBER+HN_LOCAL_PORT_ID]  ),
   .flit_i       (all_rt_flit_channel_3_without_xy_hn            ),
@@ -1269,6 +1302,10 @@ local_port_couple_module
 channel_3_couple_hn (
 .node_id_x_tgt_i  (rx_flit_dec[3][HN_LOCAL_PORT_ID].tgt_id.x_position),
 .node_id_y_tgt_i  (rx_flit_dec[3][HN_LOCAL_PORT_ID].tgt_id.y_position ),
+`ifdef ALLOW_SAME_ROUTER_L2L_TRANSFER
+.device_port_tgt_i(rx_flit_dec[3][HN_LOCAL_PORT_ID].tgt_id.device_port),
+`endif
+
 
 .node_id_x_src_i  (rx_flit_dec[3][HN_LOCAL_PORT_ID].src_id.x_position ),
 .node_id_y_src_i  (rx_flit_dec[3][HN_LOCAL_PORT_ID].src_id.y_position ),
@@ -1307,9 +1344,10 @@ assign rt_all_lcrd_id     [4][ROUTER_PORT_NUMBER+HN_LOCAL_PORT_ID] = '0;
 
 hn_router_sam
 #(
-  .flit_payload_t   (cache_scu_cc_snp_t)
+  .flit_payload_t   (cache_scu_cc_snp_t),
+  .sliced_llc       ( 1 )
 )
-channel_5_decode_hn
+channel_4_decode_hn
 (
   .flit_v_i     (all_rt_flit_v      [4][ROUTER_PORT_NUMBER+HN_LOCAL_PORT_ID]  ),
   .flit_i       (all_rt_flit_channel_4_without_xy_hn  ),
@@ -1328,9 +1366,13 @@ local_port_couple_module
   .VC_DEPTH_OUTPORT(VC_DEPTH_INPUT_L ),
   .OUTPUT_TO_L     (1 )
 )
-channel_5_couple_hn (
+channel_4_couple_hn (
 .node_id_x_tgt_i  (rx_flit_dec[4][HN_LOCAL_PORT_ID].tgt_id.x_position),
 .node_id_y_tgt_i  (rx_flit_dec[4][HN_LOCAL_PORT_ID].tgt_id.y_position ),
+`ifdef ALLOW_SAME_ROUTER_L2L_TRANSFER
+.device_port_tgt_i(rx_flit_dec[4][HN_LOCAL_PORT_ID].tgt_id.device_port),
+`endif
+
 
 .node_id_x_src_i  (rx_flit_dec[4][HN_LOCAL_PORT_ID].src_id.x_position ),
 .node_id_y_src_i  (rx_flit_dec[4][HN_LOCAL_PORT_ID].src_id.y_position ),

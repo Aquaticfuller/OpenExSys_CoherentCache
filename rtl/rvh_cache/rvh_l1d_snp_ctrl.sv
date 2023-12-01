@@ -527,6 +527,7 @@ assign pc_scu_resp_o.id.cid     = CORE_ID;
 assign pc_scu_resp_o.id.bid     = '0;
 assign pc_scu_resp_o.id.pc_tid  = '0;
 assign pc_scu_resp_o.id.scu_tid = snp_req_head_buf.snp_req.id.scu_tid;
+assign pc_scu_resp_o.id.sid     = snp_req_head_buf.snp_req.id.sid;
 assign pc_scu_resp_o.rtype      = snp_req_head_buf.s3_resp_inv ? SnpAck_FoundI : SnpAck_FoundSorE;
 
 assign pc_scu_resp_o.src_id     = '0;
@@ -585,6 +586,7 @@ assign pc_scu_data_o.id.cid     = CORE_ID;
 assign pc_scu_data_o.id.bid     = '0;
 assign pc_scu_data_o.id.pc_tid  = '0;
 assign pc_scu_data_o.id.scu_tid = snp_req_head_buf.snp_req.id.scu_tid;
+assign pc_scu_data_o.id.scu_sid = snp_req_head_buf.snp_req.id.scu_sid;
 assign pc_scu_data_o.rtype      = SnpAck_FoundM;
 
 logic [DATA_BURST_NUM-1:0][DATA_LENGTH_PER_PKG-1:0]   pc_scu_data_tmp;
@@ -661,6 +663,7 @@ assign pc_scu_data_o.id.cid     = CORE_ID;
 assign pc_scu_data_o.id.bid     = '0;
 assign pc_scu_data_o.id.pc_tid  = '0;
 assign pc_scu_data_o.id.scu_tid = snp_req_head_buf.snp_req.id.scu_tid;
+assign pc_scu_data_o.id.sid     = snp_req_head_buf.snp_req.id.sid;
 assign pc_scu_data_o.rtype      = SnpAck_FoundM;
 generate
   for(genvar data_seg_id = 0; data_seg_id < DATA_BURST_NUM; data_seg_id++) begin

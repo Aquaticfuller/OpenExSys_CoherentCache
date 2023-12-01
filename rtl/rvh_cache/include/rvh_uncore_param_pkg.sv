@@ -10,20 +10,25 @@
 // debug flags:
 // `define COMMON_DATA_VALID_LATENCY_EN
 `define SET_INVALID_DATA_PART_ZERO_EN
-// `define ENABLE_TXN_ID
+`define ENABLE_TXN_ID
 
 package rvh_uncore_param_pkg;
+  `ifdef SLICED_LLC
+  parameter L1D_NUM = 9;
+  `else
   parameter L1D_NUM = 8;
+  `endif
+
   `ifdef SYNTHESIS
   parameter L1D_MSHR_NUM = 2;
   parameter SCU_MSHR_NUM = 2;
   parameter SCU_REPL_MSHR_NUM = 2;
   `else
-  parameter L1D_MSHR_NUM = 16;
-  parameter SCU_MSHR_NUM = 64;
-  parameter SCU_REPL_MSHR_NUM = 16;
+  parameter L1D_MSHR_NUM = 8;
+  parameter SCU_MSHR_NUM = 8;
+  parameter SCU_REPL_MSHR_NUM = 2;
   `endif
-  parameter L1D_STB_ENTRY_NUM = 32;
+  parameter L1D_STB_ENTRY_NUM = 8;
   
   parameter DATA_LINE_W         = 512;
   parameter DATA_LENGTH_PER_PKG = 64; // bit
