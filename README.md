@@ -49,3 +49,16 @@ at each cycle, and the use of finite state machines to control the check behavio
 We port the C++ based
 Ruby random tester to SystemVerilog, in order to enable the use of the Ruby tester on
 the RTL implementation.
+
+## Publication
+
+If you use OpenExSys in your work, you can cite us:
+
+```
+@inproceedings{fu2023cache,
+  title={Cache Coherent Framework for RISC-V Many-core Systems},
+  author={Fu, Zexin and Wang, Mingzi and Zhang, Yihai and Tan, Zhangxi},
+  booktitle={Seventh Workshop on Computer Architecture Research with RISC-V (CARRV)},
+  year={2023}
+}
+```
